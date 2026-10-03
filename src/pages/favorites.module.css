@@ -1,0 +1,206 @@
+.intro {
+  padding: 4px 2px 0;
+}
+.title {
+  font-size: var(--fs-28);
+  font-weight: 800;
+  font-stretch: var(--narrow);
+  letter-spacing: -0.01em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  overflow: clip;
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.cardTeam {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.cardTeam:hover .cardName {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.cardName {
+  overflow: hidden;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cardLeague {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+  font-variant-numeric: tabular-nums;
+}
+.cardGames {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+.none {
+  padding: 12px 8px;
+  color: var(--ink-3);
+  font-size: var(--fs-13);
+}
+
+.gameLine {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 4px 8px;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-13);
+}
+.gameLine:hover {
+  background: var(--surface-hover);
+}
+.gameLabel {
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+  font-weight: 600;
+}
+.gameOpp {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.gameRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.when {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--live);
+}
+.w,
+.l {
+  display: inline-grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-11);
+  font-weight: 750;
+}
+.w {
+  background: var(--win-soft);
+  color: var(--win);
+}
+.l {
+  background: var(--surface-3);
+  color: var(--ink-2);
+}
+
+.pinned {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pinnedItem {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.pinnedLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px 6px 8px;
+  font-weight: 600;
+}
+.unpin {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-right: 4px;
+  border-radius: 50%;
+  color: var(--accent);
+}
+.unpin:hover {
+  background: var(--surface-hover);
+}
+
+.suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.suggestItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  font-size: var(--fs-13);
+  font-weight: 600;
+}
+.suggestItem small {
+  color: var(--ink-3);
+  font-size: var(--fs-11);
+  font-weight: 600;
+}
+.suggestItem svg {
+  color: var(--ink-3);
+}
+.suggestItem:hover {
+  border-color: var(--ink-3);
+}
+.suggestOn,
+.suggestOn:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.suggestOn svg {
+  color: var(--accent);
+}

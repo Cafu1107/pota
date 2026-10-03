@@ -1,0 +1,362 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .page {
+    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  }
+}
+@media (min-width: 1180px) {
+  .page {
+    grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--aside-w);
+    gap: 24px;
+  }
+}
+
+.railCol {
+  display: none;
+}
+@media (min-width: 900px) {
+  .railCol {
+    position: sticky;
+    top: calc(var(--topbar-h) + 20px);
+    display: block;
+    max-height: calc(100dvh - var(--topbar-h) - 40px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.asideCol {
+  position: sticky;
+  top: calc(var(--topbar-h) + 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  max-height: calc(100dvh - var(--topbar-h) - 40px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.asideCol::-webkit-scrollbar {
+  display: none;
+}
+
+.listCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.featuredInline {
+  margin-bottom: 2px;
+}
+
+/* ---------- date strip ---------- */
+.dateBar {
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: 20;
+  margin: -16px calc(var(--gutter) * -1) 0;
+  padding: 10px var(--gutter) 8px;
+  background: var(--bg);
+}
+@media (min-width: 900px) {
+  .dateBar {
+    margin: -20px 0 0;
+    padding: 20px 0 6px;
+  }
+}
+
+.dateStrip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.dateArrow,
+.datePick {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 46px;
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
+  transition: background var(--dur-1) var(--ease-out);
+}
+.dateArrow:hover,
+.datePick:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.datePick {
+  width: 40px;
+  cursor: pointer;
+}
+.datePick input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.datePick:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.dateDays {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  min-width: 0;
+}
+@media (max-width: 479px) {
+  .dateDays {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .dateDays > :first-child,
+  .dateDays > :last-child {
+    display: none;
+  }
+}
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  height: 46px;
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
+  line-height: 1.1;
+  transition:
+    background var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
+}
+.day:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.dayName {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--fs-12);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dayDate {
+  color: var(--ink);
+  font-size: var(--fs-13);
+  font-weight: 650;
+  white-space: nowrap;
+}
+.dayToday .dayName {
+  color: var(--accent-ink);
+}
+.daySelected,
+.daySelected:hover {
+  background: var(--ink);
+  color: var(--ink-inverse);
+}
+.daySelected .dayDate,
+.daySelected.dayToday .dayName {
+  color: var(--ink-inverse);
+}
+
+/* ---------- toolbar ---------- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+}
+
+.progress {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+  font-variant-numeric: tabular-nums;
+}
+.progress::before {
+  content: '';
+  width: 64px;
+  height: 3px;
+  border-radius: var(--r-xs);
+  background: var(--surface-3);
+}
+.progressBar {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 64px;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: var(--r-xs);
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform var(--dur-2) var(--ease-out);
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.failed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px;
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+}
+.retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent-ink);
+  font-weight: 650;
+}
+
+.cardLink {
+  color: var(--accent-ink);
+  font-size: var(--fs-13);
+  font-weight: 650;
+}
+.cardLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- league rail ---------- */
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 6px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.railGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.railTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 6px;
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+  font-weight: 650;
+}
+.railItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font-size: var(--fs-13);
+  font-weight: 550;
+  text-align: left;
+  transition: background var(--dur-1) var(--ease-out);
+}
+.railItem:hover {
+  background: var(--surface-hover);
+}
+.railIdle {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.railName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.railCount {
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.railLive {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--live);
+  font-size: var(--fs-12);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- skeleton ---------- */
+.skelGroup {
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.skelHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.skelRow {
+  display: grid;
+  grid-template-columns: 56px 1fr 30px;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  padding: 0 14px 0 10px;
+}
+.skelRow + .skelRow {
+  border-top: 1px solid var(--line);
+}
+.skelRow > :first-child {
+  justify-self: center;
+}
+.skelTeams {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

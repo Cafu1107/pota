@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pota — Basketbol skorları, canlı maçlar ve istatistikler</title>
+    <meta
+      name="description"
+      content="Canlı basketbol skorları, box score, şut haritası, puan durumu, takım ve oyuncu istatistikleri. BSL, EuroLeague, EuroCup, NBA ve daha fazlası tek yerde."
+    />
+    <meta name="theme-color" content="#f1f3f6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#101318" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="preconnect" href="https://a.espncdn.com" />
+    <link rel="preconnect" href="https://tbf.org.tr" />
+    <link rel="preconnect" href="https://media-cdn.cortextech.io" />
+    <link rel="dns-prefetch" href="https://media-cdn.incrowdsports.com" />
+    <link rel="dns-prefetch" href="https://images.statsengine.playbyplay.api.geniussports.com" />
+    <link rel="dns-prefetch" href="https://images.ntvspor.net" />
+    <link rel="dns-prefetch" href="https://cdn-i.pr.trt.com.tr" />
+    <link rel="dns-prefetch" href="https://iaftm.tmgrup.com.tr" />
+    <link rel="dns-prefetch" href="https://images.eurohoops.net" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <script>
+      // Apply the saved theme and language before first paint (no flash).
+      try {
+        var s = JSON.parse(localStorage.getItem('pota:settings') || '{}');
+        if (s.theme === 'light' || s.theme === 'dark') document.documentElement.setAttribute('data-theme', s.theme);
+        if (s.lang === 'en') document.documentElement.lang = 'en';
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Pota JavaScript gerektirir. / Pota needs JavaScript.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

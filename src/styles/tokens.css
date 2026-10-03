@@ -1,0 +1,174 @@
+/* Design tokens. Light is the default; dark comes from the OS setting unless the
+   viewer picked a theme (data-theme on <html>), which wins both ways. */
+
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --bg: #f1f3f6;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --surface-3: #eef0f3;
+  --surface-hover: #f4f6f8;
+  --line: #e4e7ec;
+  --line-strong: #d2d6dd;
+
+  /* ink */
+  --ink: #12151a;
+  --ink-2: #5b6370;
+  --ink-3: #6b7380;
+  --ink-inverse: #ffffff;
+
+  /* brand: rim orange */
+  --accent: #ea580c;
+  --accent-ink: #c2410c;
+  --accent-strong: #c2410c;
+  --accent-soft: #fff1e8;
+  --on-accent: #ffffff;
+
+  /* live state (reserved: nothing else is red) */
+  --live: #dc2626;
+  --live-soft: #fdecec;
+
+  /* photo overlays */
+  --scrim: rgba(10, 12, 16, 0.72);
+  --on-scrim: #ffffff;
+
+  /* results */
+  --win: #15803d;
+  --win-soft: #e8f5ec;
+  --loss: #6b7380;
+
+  /* data series (validated pair, see lib/color.ts) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --grid: #e9ecf0;
+  --court-line: #c9ced6;
+  --court-paint: #f3f5f8;
+
+  /* shape */
+  --r-hair: 2px;
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  --card-border: transparent;
+  --shadow-control: 0 1px 2px rgba(15, 23, 42, 0.12), 0 1px 1px rgba(15, 23, 42, 0.06);
+  --flag-ring: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 1px rgba(15, 23, 42, 0.03);
+  --shadow-pop: 0 18px 40px -12px rgba(15, 23, 42, 0.28), 0 6px 14px -6px rgba(15, 23, 42, 0.14);
+  --shadow-bar: 0 -1px 0 var(--line), 0 -8px 24px -12px rgba(15, 23, 42, 0.18);
+
+  /* type */
+  --font: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fs-11: 0.6875rem;
+  --fs-12: 0.75rem;
+  --fs-13: 0.8125rem;
+  --fs-14: 0.875rem;
+  --fs-15: 0.9375rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-28: 1.75rem;
+  --fs-32: 2rem;
+  --fs-40: 2.5rem;
+  --fs-52: 3.25rem;
+  --condensed: 78%;
+  --narrow: 90%;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 140ms;
+  --dur-2: 220ms;
+  --dur-3: 420ms;
+
+  /* layout */
+  --topbar-h: 56px;
+  --bottombar-h: 60px;
+  --rail-w: 252px;
+  --aside-w: 352px;
+  --content-max: 1380px;
+  --gutter: 16px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0f1115;
+    --surface: #171a20;
+    --surface-2: #1b1f26;
+    --surface-3: #22272f;
+    --surface-hover: #1e232a;
+    --line: #262b33;
+    --line-strong: #343a45;
+    --ink: #eceef1;
+    --ink-2: #a3aab5;
+    --ink-3: #8b93a0;
+    --ink-inverse: #12151a;
+    --accent: #ff7a2f;
+    --accent-ink: #ff8a4c;
+    --accent-strong: #c2410c;
+    --accent-soft: rgba(255, 122, 47, 0.13);
+    --on-accent: #ffffff;
+    --live: #f87171;
+    --live-soft: rgba(248, 113, 113, 0.13);
+    --win: #22a356;
+    --win-soft: rgba(34, 163, 86, 0.14);
+    --loss: #8b93a0;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --grid: #242932;
+    --court-line: #3a414c;
+    --court-paint: #1d2129;
+    --card-border: var(--line);
+    --shadow-control: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.2);
+    --shadow-pop: 0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 8px 18px -8px rgba(0, 0, 0, 0.5);
+    --shadow-bar: 0 -1px 0 var(--line), 0 -10px 28px -14px rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --surface: #171a20;
+  --surface-2: #1b1f26;
+  --surface-3: #22272f;
+  --surface-hover: #1e232a;
+  --line: #262b33;
+  --line-strong: #343a45;
+  --ink: #eceef1;
+  --ink-2: #a3aab5;
+  --ink-3: #8b93a0;
+  --ink-inverse: #12151a;
+  --accent: #ff7a2f;
+  --accent-ink: #ff8a4c;
+  --accent-strong: #c2410c;
+  --accent-soft: rgba(255, 122, 47, 0.13);
+  --on-accent: #ffffff;
+  --live: #f87171;
+  --live-soft: rgba(248, 113, 113, 0.13);
+  --win: #22a356;
+  --win-soft: rgba(34, 163, 86, 0.14);
+  --loss: #8b93a0;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --grid: #242932;
+  --court-line: #3a414c;
+  --court-paint: #1d2129;
+  --card-border: var(--line);
+  --shadow-control: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.2);
+  --shadow-pop: 0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 8px 18px -8px rgba(0, 0, 0, 0.5);
+  --shadow-bar: 0 -1px 0 var(--line), 0 -10px 28px -14px rgba(0, 0, 0, 0.7);
+}

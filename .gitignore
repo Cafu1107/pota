@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dev-dist/
+.impeccable/
+*.log
+.DS_Store
+Thumbs.db
+
+# Cloudflare Worker
+deploy/worker/node_modules/
+deploy/worker/.wrangler/
+dist-pages/

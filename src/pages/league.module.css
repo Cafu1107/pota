@@ -1,0 +1,217 @@
+.region {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.note {
+  margin: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--fs-13);
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+/* ---------- rounds ---------- */
+.rounds {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.roundArrow {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--ink-2);
+}
+.roundArrow:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.roundArrow:disabled {
+  opacity: 0.35;
+}
+.roundStrip {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.roundStrip::-webkit-scrollbar {
+  display: none;
+}
+.round {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: var(--r-pill);
+  color: var(--ink-2);
+  font-size: var(--fs-13);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.round:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.roundActive,
+.roundActive:hover {
+  background: var(--ink);
+  color: var(--ink-inverse);
+}
+
+.fixtures {
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+.stale {
+  opacity: 0.55;
+}
+.day + .day {
+  border-top: 1px solid var(--line);
+}
+.dayTitle {
+  padding: 10px 16px 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: var(--fs-12);
+  font-weight: 650;
+}
+.dayRows > * + * {
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- leaders ---------- */
+.leadersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.leaderTop {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin: 0 8px;
+  padding: 10px 8px 14px;
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+}
+.leaderTop:hover {
+  background: var(--surface-hover);
+}
+.leaderTopText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.leaderTopName {
+  font-size: var(--fs-16);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.leaderTeam {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink-2);
+  font-size: var(--fs-12);
+}
+.leaderTopValue {
+  font-size: var(--fs-32);
+  font-weight: 800;
+  font-stretch: var(--condensed);
+  line-height: 1;
+}
+.leaderList {
+  margin: 0;
+  padding: 4px 8px 8px;
+  list-style: none;
+}
+.leaderItem {
+  display: grid;
+  grid-template-columns: 18px 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 4px 8px;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-13);
+}
+.leaderItem:hover {
+  background: var(--surface-hover);
+}
+.leaderRank {
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.leaderName {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+.leaderTeamSmall {
+  overflow: hidden;
+  color: var(--ink-3);
+  font-size: var(--fs-11);
+  font-weight: 500;
+  text-overflow: ellipsis;
+}
+.leaderValue {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- teams ---------- */
+.teamsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.teamTile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 8px 10px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  transition: background var(--dur-1) var(--ease-out);
+}
+.teamTile:hover {
+  background: var(--surface-hover);
+}
+.teamTileName {
+  flex: 1;
+  min-width: 0;
+  font-weight: 650;
+  line-height: 1.25;
+}

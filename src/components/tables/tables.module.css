@@ -1,0 +1,411 @@
+/* ---------- shared data table ---------- */
+.scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.table {
+  width: 100%;
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table td {
+  height: 42px;
+  padding: 0 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+.table thead th {
+  height: 34px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+  font-weight: 600;
+}
+.table tbody tr + tr {
+  border-top: 1px solid var(--line);
+}
+.table td {
+  color: var(--ink-2);
+}
+
+.compact th,
+.compact td {
+  height: 36px;
+  padding: 0 6px;
+}
+
+.clickRow {
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease-out);
+}
+.clickRow:hover {
+  background: var(--surface-hover);
+}
+.highlight {
+  background: var(--accent-soft);
+}
+.highlight:hover {
+  background: var(--accent-soft);
+}
+
+.wide {
+  display: none;
+}
+@media (min-width: 720px) {
+  .wide {
+    display: table-cell;
+  }
+}
+
+.strong {
+  color: var(--ink) !important;
+  font-weight: 700;
+}
+
+/* ---------- standings ---------- */
+.standings {
+  display: flex;
+  flex-direction: column;
+}
+.group + .group {
+  margin-top: 6px;
+  border-top: 1px solid var(--line);
+}
+.groupTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 14px 16px 6px;
+  font-size: var(--fs-14);
+  font-weight: 700;
+}
+.groupSeason {
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+  font-weight: 500;
+}
+
+/* Every cell paints the row colour itself so the sticky columns stay opaque. */
+.standingsTable {
+  --row-bg: var(--surface);
+}
+.standingsTable th,
+.standingsTable td {
+  background: var(--row-bg);
+  transition: background var(--dur-1) var(--ease-out);
+}
+.standingsTable tbody tr:hover {
+  --row-bg: var(--surface-hover);
+}
+.standingsTable tbody tr.highlight {
+  --row-bg: var(--accent-soft);
+}
+.standingsTable thead th {
+  vertical-align: bottom;
+  padding-bottom: 8px;
+}
+.standingsTable:not(.compact) td {
+  min-width: 40px;
+}
+.standingsTable.compact td:not(.rankCol) {
+  min-width: 28px;
+}
+.standingsTable:not(.compact) th,
+.standingsTable:not(.compact) td {
+  padding: 0 10px;
+}
+
+/* the team column takes the slack so the numbers sit together */
+.standingsTable .teamCol {
+  width: 100%;
+}
+
+/* column groups: record | ranking value | scoring | home/away */
+.groupStart {
+  box-shadow: inset 1px 0 0 var(--line);
+}
+
+/* the value the table is ranked by */
+.standingsTable td.rankValue {
+  background: color-mix(in srgb, var(--surface-3) 62%, var(--row-bg));
+  color: var(--ink);
+  font-weight: 750;
+}
+.standingsTable th.rankValue {
+  color: var(--ink);
+}
+
+/* header labels: abbreviations on narrow screens, words where there is room */
+.short {
+  text-decoration: none;
+  cursor: help;
+}
+.long {
+  display: none;
+}
+@media (min-width: 1100px) {
+  .standingsTable:not(.compact) .short {
+    display: none;
+  }
+  .standingsTable:not(.compact) .long {
+    display: inline;
+  }
+}
+
+.rankCol {
+  box-sizing: border-box;
+  width: 44px;
+  min-width: 44px !important;
+  padding-left: 12px !important;
+  padding-right: 0 !important;
+}
+
+.rank {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 4px;
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
+  font-weight: 650;
+}
+.zone_playoff,
+.zone_top {
+  background: color-mix(in srgb, var(--series-1) 24%, transparent);
+  color: var(--ink);
+}
+.zone_playin {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--series-1) 70%, transparent);
+  color: var(--ink);
+}
+.zone_down {
+  background: var(--ink-3);
+  color: var(--ink-inverse);
+}
+
+/* zone boundaries: a rule under the last row of a zone */
+.end_playoff > *,
+.end_top > * {
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--series-1) 70%, transparent);
+}
+.end_playin > * {
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--series-1) 35%, transparent);
+}
+.start_down > * {
+  box-shadow: inset 0 2px 0 var(--ink-3);
+}
+.end_playoff > .groupStart,
+.end_top > .groupStart {
+  box-shadow:
+    inset 0 -2px 0 color-mix(in srgb, var(--series-1) 70%, transparent),
+    inset 1px 0 0 var(--line);
+}
+.end_playin > .groupStart {
+  box-shadow:
+    inset 0 -2px 0 color-mix(in srgb, var(--series-1) 35%, transparent),
+    inset 1px 0 0 var(--line);
+}
+.start_down > .groupStart {
+  box-shadow:
+    inset 0 2px 0 var(--ink-3),
+    inset 1px 0 0 var(--line);
+}
+
+.teamCol {
+  min-width: 170px;
+  text-align: left !important;
+}
+.teamCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.teamCell:hover .teamName {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.teamName {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nameShort {
+  display: none;
+}
+.compact .teamName {
+  max-width: 170px;
+}
+.favRow .teamName {
+  font-weight: 750;
+}
+.fav {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+/* phones: rank and team stay put while the numbers scroll */
+.scrollWrap {
+  position: relative;
+}
+.scrollWrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  background: linear-gradient(to left, var(--surface), transparent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+.moreRight::after {
+  opacity: 1;
+}
+@media (max-width: 899px) {
+  .standingsTable:not(.compact) .stickRank,
+  .standingsTable:not(.compact) .stickTeam {
+    position: sticky;
+    z-index: 1;
+  }
+  .standingsTable:not(.compact) .stickRank {
+    left: 0;
+  }
+  .standingsTable:not(.compact) .stickTeam {
+    left: 44px;
+    min-width: 0;
+    max-width: 40vw;
+    padding-right: 10px;
+  }
+  /* tight number columns so played, won, lost and the ranking value fit without scrolling */
+  .standingsTable:not(.compact) td,
+  .standingsTable:not(.compact) thead th:not(.stickRank):not(.stickTeam) {
+    min-width: 0;
+    padding: 0 7px;
+  }
+  .standingsTable:not(.compact) .teamCell {
+    gap: 8px;
+  }
+  .standingsTable:not(.compact) .teamCol {
+    width: auto;
+  }
+  .standingsTable:not(.compact) .nameFull {
+    display: none;
+  }
+  .standingsTable:not(.compact) .nameShort {
+    display: inline;
+  }
+}
+
+.formCol {
+  width: 132px;
+}
+.form {
+  display: inline-flex;
+  gap: 3px;
+}
+.formW,
+.formL {
+  display: inline-grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-11);
+  font-weight: 750;
+}
+.formW {
+  background: var(--win-soft);
+  color: var(--win);
+}
+.formL {
+  background: var(--surface-3);
+  color: var(--ink-2);
+}
+
+/* ---------- legend ---------- */
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: var(--fs-12);
+}
+.legend:not(:has(> *)) {
+  display: none;
+}
+.zoneList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.zoneList li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.swatch {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: var(--r-xs);
+}
+.zoneName {
+  color: var(--ink);
+  font-weight: 650;
+}
+.zoneRange {
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.abbrList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+}
+.abbrList > div {
+  display: inline-flex;
+  gap: 5px;
+}
+.abbrList dt {
+  color: var(--ink);
+  font-weight: 700;
+}
+.abbrList dd {
+  margin: 0;
+  color: var(--ink-3);
+}
+@media (min-width: 1100px) {
+  .abbrNarrowOnly {
+    display: none;
+  }
+}
+.legendCompact {
+  gap: 8px;
+  padding: 10px 16px 12px;
+  font-size: var(--fs-11);
+}
+.legendCompact .zoneList {
+  gap: 6px 14px;
+}
+.legendCompact .swatch {
+  width: 12px;
+  min-width: 12px;
+  height: 12px;
+}
+.legendCompact .abbrList {
+  gap: 2px 10px;
+}

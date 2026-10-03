@@ -1,0 +1,178 @@
+.hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  padding: 20px 16px;
+  background-repeat: no-repeat;
+}
+@media (min-width: 760px) {
+  .hero {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 26px;
+    padding: 26px 28px;
+  }
+}
+
+.photo {
+  width: 96px !important;
+  height: 96px !important;
+  box-shadow: 0 0 0 4px var(--surface);
+}
+@media (min-width: 760px) {
+  .photo {
+    width: 132px !important;
+    height: 132px !important;
+  }
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-2);
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+.number {
+  color: var(--ink);
+  font-weight: 800;
+  font-stretch: var(--condensed);
+  font-size: var(--fs-18);
+}
+
+.name {
+  font-size: var(--fs-28);
+  font-weight: 800;
+  font-stretch: var(--narrow);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+}
+@media (min-width: 760px) {
+  .name {
+    font-size: var(--fs-40);
+  }
+}
+
+.teamLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin-top: 4px;
+  font-size: var(--fs-14);
+}
+.team,
+.leagueLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.leagueLink {
+  color: var(--ink-2);
+}
+a.team:hover,
+.leagueLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.compare {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  font-weight: 650;
+  font-size: var(--fs-14);
+}
+.compare:hover {
+  background: var(--surface-hover);
+}
+@media (min-width: 760px) {
+  .compare {
+    grid-column: auto;
+    align-self: start;
+  }
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 11px 16px;
+  box-shadow: inset -1px -1px 0 var(--line);
+}
+.fact dt {
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+}
+.fact dd {
+  margin: 0;
+  font-weight: 650;
+}
+
+.log th,
+.log td {
+  height: 40px;
+}
+.left {
+  text-align: left !important;
+}
+.dateLink {
+  color: var(--ink);
+  font-weight: 600;
+}
+.dateLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.opp {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+}
+.oppMark {
+  min-width: 18px;
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+}
+.w,
+.l {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-11);
+  font-weight: 750;
+}
+.w {
+  background: var(--win-soft);
+  color: var(--win);
+}
+.l {
+  background: var(--surface-3);
+  color: var(--ink-2);
+}
