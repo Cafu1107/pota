@@ -1,6 +1,7 @@
 // ESPN public API: NBA, WNBA, G League, NCAA, NBL, FIBA.
 import { getJson, getJsonOrNull } from '../http';
 import type {
+  GameHistory,
   CareerRow, Game, GameDetail, GameLeader, GameLogRow, LeaderCategory, LeaderKey, LeagueDef, LeagueSchedule,
   Play, PlayKind, PlayerAverages, PlayerDetail, PlayerHit, PlayerLine, Provider, RosterPlayer, Shot, Side,
   StandingGroup, StandingRow, StatLine, TeamBox, TeamDetail, TeamRef,
@@ -10,6 +11,7 @@ import {
   pushCompare, sortGames,
 } from '../normalize';
 import { addDays, localDayOf, todayKey, zoneDatesForLocalDay } from '../../lib/time';
+import { buildHistory, seasonLabel } from '../../lib/history';
 
 const FT = 0.3048;
 
@@ -428,6 +430,28 @@ async function team(league: LeagueDef, id: string): Promise<TeamDetail> {
   };
 }
 
+// ---------- head to head ----------
+
+/** Both teams' schedules this season, plus the home team's last two seasons (regular season and playoffs). */
+async function history(league: LeagueDef, g: Game): Promise<GameHistory> {
+  const path = (id: string) => `/apis/site/v2/sports/basketball/${league.espnSlug}/teams/${id}/schedule`;
+  const sched = (id: string, params?: Record<string, string | number>) => getJsonOrNull('espn', path(id), params).catch(() => null);
+  const games = (...lists: any[]) => lists.flatMap((j) => (j?.events ?? []).map((ev: any) => gameFrom(league, ev, ev.competitions?.[0])));
+  const h = g.home.team.id;
+  const a = g.away.team.id;
+  const [hCur, hReg, aCur, aReg] = await Promise.all([sched(h), sched(h, { seasontype: 2 }), sched(a), sched(a, { seasontype: 2 })]);
+  const year = num(hCur?.season?.year ?? hReg?.season?.year) || new Date(g.start).getFullYear() + 1;
+  const [p1, p1po, p2, p2po, a1] = await Promise.all([
+    sched(h, { season: year - 1, seasontype: 2 }),
+    sched(h, { season: year - 1, seasontype: 3 }),
+    sched(h, { season: year - 2, seasontype: 2 }),
+    sched(h, { season: year - 2, seasontype: 3 }),
+    sched(a, { season: year - 1, seasontype: 2 }),
+  ]);
+  const label = (j: any, y: number) => j?.requestedSeason?.displayName ?? j?.season?.displayName ?? seasonLabel(y - 1);
+  return buildHistory(g, games(hCur, hReg, p1, p1po, p2, p2po), games(aCur, aReg, a1), [label(hCur, year), label(p1, year - 1), label(p2, year - 2)]);
+}
+
 // ---------- players ----------
 
 function averagesFrom(names: string[], stats: string[]): PlayerAverages {
@@ -623,4 +647,4 @@ async function searchPlayers(league: LeagueDef, q: string): Promise<PlayerHit[]>
     }));
 }
 
-export const espnProvider: Provider = { gamesByDate, game, standings, teams, team, player, leaders, schedule, searchPlayers };
+export const espnProvider: Provider = { gamesByDate, game, history, standings, teams, team, player, leaders, schedule, searchPlayers };

@@ -28,6 +28,7 @@ A few rules keep the project consistent:
 - **Proxy rules live in one place.** New upstream hosts and their cache times go in `server/upstreams.mjs`, which both the local proxy and the Cloudflare Worker use.
 - **Both languages, always.** Every new UI string goes into `src/i18n/tr.ts` and `src/i18n/en.ts`.
 - **Design tokens, not raw values.** Colors, radii and type sizes come from `src/styles/tokens.css`; see `DESIGN.md` for the rules (red means live and nothing else, team colors only where they pass the contrast check).
+- **Comment rules are tested both ways.** When you add a word to `server/moderation.mjs`, add it to `tests/features.test.ts` together with a clean word that looks like it ("sıkı" next to the "sik-" family), so the filter never starts masking basketball talk.
 - **Check it in a browser** at phone and desktop widths, in both themes, before opening the pull request.
 
 ## License

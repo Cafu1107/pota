@@ -435,3 +435,48 @@ section + section > .dayTitle {
   aspect-ratio: 4 / 3;
   border-radius: var(--r-sm);
 }
+
+/* ---------- highlights strip ---------- */
+.highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 0 2px;
+}
+.sectionTitle {
+  font-size: var(--fs-18);
+  font-weight: 750;
+}
+.sectionHint {
+  color: var(--ink-3);
+  font-size: var(--fs-12);
+}
+.hlStrip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 280px);
+  gap: 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+.hlStrip > * {
+  scroll-snap-align: start;
+}
+@media (max-width: 767px) {
+  .hlStrip {
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    scroll-padding-inline: var(--gutter);
+    grid-auto-columns: 78%;
+  }
+}

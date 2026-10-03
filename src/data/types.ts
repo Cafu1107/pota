@@ -375,9 +375,20 @@ export interface PlayerHit {
   number?: string;
 }
 
+/** Head to head: what the two teams of a game did against each other and lately. */
+export interface GameHistory {
+  /** Games between the two teams (any status), newest first. */
+  meetings: Game[];
+  /** Seasons the meetings were looked up in, newest first ("2026-27"). */
+  seasons: string[];
+  /** Each team's finished games before this one, newest first (up to five). */
+  form: Record<Side, Game[]>;
+}
+
 export interface Provider {
   gamesByDate(league: LeagueDef, date: string): Promise<Game[]>;
   game(league: LeagueDef, id: string): Promise<GameDetail>;
+  history(league: LeagueDef, game: Game): Promise<GameHistory>;
   standings(league: LeagueDef): Promise<StandingGroup[]>;
   teams(league: LeagueDef): Promise<TeamRef[]>;
   team(league: LeagueDef, id: string): Promise<TeamDetail>;

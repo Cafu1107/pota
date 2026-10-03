@@ -1,7 +1,9 @@
 // All upstream calls go through the same-origin proxy (server/proxy.mjs).
 const PROXY_BASE = (import.meta.env.VITE_PROXY_BASE as string | undefined) ?? '/proxy';
+// Comments API: next to the proxy ("/api" locally, the Worker's /api on GitHub Pages).
+export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? PROXY_BASE.replace(/\/proxy\/?$/, '/api');
 
-export type Upstream = 'espn' | 'espn-web' | 'el' | 'el-live' | 'tbf' | 'fls' | 'fls-lite' | 'ntvspor' | 'trtspor' | 'fotomac' | 'eurohoops';
+export type Upstream = 'espn' | 'espn-web' | 'el' | 'el-live' | 'tbf' | 'fls' | 'fls-lite' | 'ntvspor' | 'trtspor' | 'fotomac' | 'eurohoops' | 'yt';
 
 export class HttpError extends Error {
   constructor(

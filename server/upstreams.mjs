@@ -13,9 +13,16 @@ export const UPSTREAMS = {
   trtspor: 'https://www.trtspor.com.tr',
   fotomac: 'https://www.fotomac.com.tr',
   eurohoops: 'https://www.eurohoops.net',
+  // Game highlights: public RSS feeds of official channels and playlists
+  yt: 'https://www.youtube.com',
 };
 
-// [upstream, path regex, fresh seconds, hot]. First match wins.
+// Upstreams that only expose some paths.
+const PATHS = {
+  yt: /^\/feeds\/videos\.xml$/,
+};
+
+// [upstream, regex on path + query, fresh seconds, hot]. First match wins.
 // Hot entries are live data: refreshed in the background while clients poll them.
 export const TTL_RULES = [
   ['fls', /./, 3, true],
@@ -26,6 +33,8 @@ export const TTL_RULES = [
   ['espn-web', /\/search/, 3600, false],
   ['espn-web', /\/leaders/, 1800, false],
   ['espn-web', /./, 900, false],
+  // A club's whole schedule (head to head): changes only when one of its games ends.
+  ['el', /\/games\?(?:.*&)?teamCode=/, 600, false],
   ['el', /\/games\b/, 15, true],
   ['el', /./, 900, false],
   ['tbf', /\/Match\//, 8, true],
@@ -36,6 +45,7 @@ export const TTL_RULES = [
   ['trtspor', /./, 180, false],
   ['fotomac', /./, 180, false],
   ['eurohoops', /./, 180, false],
+  ['yt', /./, 600, false],
 ];
 
 // How long a stale copy may still be served instantly while it refreshes.
@@ -61,7 +71,7 @@ export function rule(upstream, path) {
 
 /**
  * Splits "<upstream>/<path>?<query>" into a validated upstream URL.
- * @returns {{ upstream: string, url: string, path: string } | { error: string, status: number }}
+ * @returns {{ upstream: string, url: string, path: string, query: string } | { error: string, status: number }}
  */
 export function resolveTarget(rest) {
   const slash = rest.indexOf('/');
@@ -74,7 +84,9 @@ export function resolveTarget(rest) {
   const prefix = target.pathname.replace(/\/$/, '');
   const joined = new URL(prefix + pathAndQuery, target.origin);
   if (joined.origin !== target.origin) return { error: 'bad path', status: 400 };
-  return { upstream, url: joined.href, path: joined.pathname.slice(prefix.length) };
+  const path = joined.pathname.slice(prefix.length);
+  if (PATHS[upstream] && !PATHS[upstream].test(path)) return { error: 'path not allowed', status: 403 };
+  return { upstream, url: joined.href, path: joined.pathname.slice(prefix.length), query: joined.search };
 }
 
 export const isPostAllowed = (upstream, path) => POST_ALLOW.some(([u, re]) => u === upstream && re.test(path));

@@ -40,6 +40,14 @@ async function exercise(leagueId: string, days: number[], opts: { teamId?: strin
   }
   if (found) {
     const det = await p.game(league, found.id);
+    const h = await p.history(league, det.game);
+    console.log(
+      `[${leagueId}] history ${det.game.home.team.name} v ${det.game.away.team.name}: seasons=${h.seasons.join('/')} meetings=${h.meetings.length}`,
+      h.meetings.slice(0, 3).map((m) => `${m.start.slice(0, 10)} ${m.home.team.name} ${m.home.score ?? ''}-${m.away.score ?? ''} ${m.away.team.name}`),
+      `form=${h.form.home.length}/${h.form.away.length}`,
+    );
+    expect(h.meetings.every((m) => [m.home.team.id, m.away.team.id].sort().join() === [det.game.home.team.id, det.game.away.team.id].sort().join())).toBe(true);
+    expect(h.form.home.every((m) => m.status === 'final' && new Date(m.start) < new Date(det.game.start))).toBe(true);
     console.log(`[${leagueId}] game ${found.id}: box=${!!det.box} players=${det.box?.home.players.length}/${det.box?.away.players.length} plays=${det.plays?.length} shots=${det.shots?.length} compare=${det.compare?.length} leaders=${det.leaders?.length} periods=${det.game.home.periods.join(',')}|${det.game.away.periods.join(',')} missing=${det.missing}`);
     expect(det.game.home.team.name).toBeTruthy();
     if (det.box) {

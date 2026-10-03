@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Link } from 'react-router';
-import { Star } from 'lucide-react';
+import { Play, Star } from 'lucide-react';
 import type { Game, LeagueDef, Side } from '../../data/types';
 import { useI18n } from '../../i18n';
 import { usePrefetch } from '../../data/queries';
@@ -17,10 +17,14 @@ interface Props {
   league?: LeagueDef;
   favorites?: Set<string>;
   showLeague?: boolean;
+  /** Date under the status instead of the league (head-to-head lists span seasons). */
+  showDate?: boolean;
+  /** A highlights or replay video exists (shown as a small play mark). */
+  hasVideo?: boolean;
   compact?: boolean;
 }
 
-function GameRowBase({ game: g, league, favorites, showLeague, compact }: Props) {
+function GameRowBase({ game: g, league, favorites, showLeague, showDate, hasVideo, compact }: Props) {
   const i18n = useI18n();
   const prefetch = usePrefetch();
   const warm = () => prefetch.game(g.leagueId, g.id);
@@ -39,6 +43,7 @@ function GameRowBase({ game: g, league, favorites, showLeague, compact }: Props)
     g.away.team.name,
     ',',
     g.status === 'scheduled' ? i18n.time(g.start) : i18n.statusLong(g, league),
+    hasVideo ? `, ${i18n.t('videoHighlights')}` : '',
   ].join(' ');
 
   const teamLine = (side: Side) => {
@@ -75,7 +80,16 @@ function GameRowBase({ game: g, league, favorites, showLeague, compact }: Props)
         ) : (
           <>
             <span className={`${s.statusTop} ${g.status === 'scheduled' ? s.statusTime : ''}`}>{st.top}</span>
-            {showLeague && league && <span className={s.statusLeague}>{league.short}</span>}
+            {hasVideo && final && (
+              <span className={s.statusVideo} title={i18n.t('videoHighlights')} aria-hidden>
+                <Play size={9} fill="currentColor" strokeWidth={0} />
+              </span>
+            )}
+            {showDate ? (
+              <span className={s.statusLeague}>{i18n.dateShortYear(g.start)}</span>
+            ) : (
+              showLeague && league && <span className={s.statusLeague}>{league.short}</span>
+            )}
           </>
         )}
       </div>

@@ -397,3 +397,16 @@
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
+
+/* a finished game with highlights or a replay on YouTube */
+.statusVideo {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  padding-left: 1px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}

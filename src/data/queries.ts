@@ -130,6 +130,18 @@ export function useGame(leagueId: string | undefined, id: string | undefined) {
   return useQuery({ ...gameOptions(leagueId ?? LEAGUES[0].id, id ?? ''), enabled: !!getLeague(leagueId) && !!id });
 }
 
+/** Head to head for a game: meetings across the seasons the source offers, and both teams' form. */
+export function useGameHistory(game: Game | undefined) {
+  const league = getLeague(game?.leagueId);
+  return useQuery({
+    queryKey: ['history', game?.leagueId, game?.id, game?.home.team.id, game?.away.team.id],
+    queryFn: () => providerFor(league!).history(league!, game!),
+    enabled: !!league && !!game,
+    staleTime: 10 * MINUTE,
+    retry: 1,
+  });
+}
+
 export function useStandings(leagueId: string | undefined) {
   return useQuery({ ...standingsOptions(leagueId ?? LEAGUES[0].id), enabled: !!getLeague(leagueId) });
 }

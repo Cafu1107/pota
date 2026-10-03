@@ -1,17 +1,20 @@
 import { Link, Outlet, useOutletContext, useParams } from 'react-router';
-import { BarChart3, Clock3, Crosshair, ListOrdered, Users } from 'lucide-react';
+import { Clock3, Crosshair, ListOrdered, Users } from 'lucide-react';
 import { getLeague } from '../data/leagues';
-import { useGame, useTeam } from '../data/queries';
-import type { Game, GameDetail, LeagueDef, Side, TeamRef } from '../data/types';
+import { useGame, useGameHistory } from '../data/queries';
+import type { GameDetail, LeagueDef, Side } from '../data/types';
 import { useI18n } from '../i18n';
 import { teamColors, wash, type TeamColors } from '../lib/color';
 import { useNow } from '../lib/hooks';
 import { useResolvedTheme } from '../state/settings';
 import { QuarterTable } from '../components/games/QuarterTable';
-import { GameRow } from '../components/games/GameRow';
 import { LeadTracker } from '../components/game/LeadTracker';
 import { TeamCompare } from '../components/game/TeamCompare';
 import { GameLeaders } from '../components/game/GameLeaders';
+import { FormCompare, H2HMeetings, H2HSkeleton, H2HSummary, SeasonCompare } from '../components/game/HeadToHead';
+import { Comments } from '../components/game/Comments';
+import { GameVideo } from '../components/video/Video';
+import { commentKey, useComments } from '../data/comments';
 import { BoxScore } from '../components/game/BoxScore';
 import { PlayByPlay } from '../components/game/PlayByPlay';
 import { ShotChart } from '../components/shots/ShotChart';
@@ -164,6 +167,7 @@ export function GamePage() {
   const { t } = useI18n();
   const theme = useResolvedTheme();
   const q = useGame(leagueId, gameId);
+  const comments = useComments(q.data ? commentKey(q.data.game) : undefined);
   if (!league) return <NotFound title={t('leagueNotFound')} />;
   if (q.isLoading) return <GameSkeleton />;
   if (q.isError || !q.data) return <ErrorState onRetry={() => q.refetch()} title={t('gameNotFound')} />;
@@ -176,7 +180,9 @@ export function GamePage() {
     { to: `${base}/mac-akisi`, label: t('tabPlays') },
     { to: `${base}/sut-haritasi`, label: t('tabShots') },
   ];
-  if (detail.meetings?.length) tabs.push({ to: `${base}/karsilasmalar`, label: t('tabMeetings') });
+  tabs.push({ to: `${base}/karsilasmalar`, label: t('tabMeetings') });
+  const commentTotal = comments.data?.total ?? 0;
+  tabs.push({ to: `${base}/yorumlar`, label: commentTotal ? `${t('tabComments')} (${commentTotal})` : t('tabComments') });
   const ctx: Ctx = { detail, league, colors };
   return (
     <div className={s.page}>
@@ -199,52 +205,6 @@ export function GamePage() {
 function NotStarted() {
   const { t } = useI18n();
   return <EmptyState icon={<Clock3 size={22} />} title={t('notStartedYet')} hint={t('notStartedHint')} />;
-}
-
-function RecentForm({ team, league, side }: { team: TeamRef; league: LeagueDef; side: Side }) {
-  const i18n = useI18n();
-  const q = useTeam(league.id, team.id);
-  const games = (q.data?.games ?? []).filter((g) => g.status === 'final').slice(-5).reverse();
-  return (
-    <div className={s.form}>
-      <header className={s.formHead}>
-        <TeamLogo team={team} size={22} />
-        <span>{team.short ?? team.name}</span>
-        {q.data?.record && (
-          <span className={s.formRecord}>
-            {q.data.record.w}-{q.data.record.l}
-          </span>
-        )}
-      </header>
-      {q.isLoading ? (
-        <Skeleton w="100%" h={60} r={8} />
-      ) : games.length ? (
-        <ul className={s.formList}>
-          {games.map((g) => {
-            const mine: Side = g.home.team.id === team.id ? 'home' : 'away';
-            const opp = g[mine === 'home' ? 'away' : 'home'];
-            const won = g[mine].winner === true;
-            return (
-              <li key={g.id}>
-                <Link to={`/mac/${league.id}/${encodeURIComponent(g.id)}`} className={s.formItem}>
-                  <span className={won ? s.formW : s.formL}>{won ? i18n.t('formWin') : i18n.t('formLoss')}</span>
-                  <span className={s.formOpp}>
-                    {mine === 'home' ? i18n.t('vs') : i18n.t('at')} {opp.team.short ?? opp.team.name}
-                  </span>
-                  <span className="tnum">
-                    {g[mine].score}-{opp.score}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p className={s.muted}>{i18n.t('noGames')}</p>
-      )}
-      <span className="sr-only">{side}</span>
-    </div>
-  );
 }
 
 function GameInfo({ detail, league }: { detail: GameDetail; league: LeagueDef }) {
@@ -287,16 +247,12 @@ export function GameSummary() {
     return (
       <div className={s.grid}>
         <div className={s.colMain}>
-          <Card>
-            <NotStarted />
-            <div className={s.formGrid}>
-              <RecentForm team={g.home.team} league={league} side="home" />
-              <RecentForm team={g.away.team} league={league} side="away" />
-            </div>
-          </Card>
+          <GameVideo game={g} />
+          <PreGame />
         </div>
         <div className={s.colSide}>
           <GameInfo detail={detail} league={league} />
+          <SeasonCompare game={g} league={league} />
         </div>
       </div>
     );
@@ -305,6 +261,7 @@ export function GameSummary() {
   return (
     <div className={s.grid}>
       <div className={s.colMain}>
+        <GameVideo game={g} />
         {hasTimeline && (
           <Card>
             <CardHeader title={t('leadTracker')}>
@@ -378,22 +335,56 @@ export function GameShots() {
   );
 }
 
-export function GameMeetings() {
-  const { detail, league } = useGameCtx();
-  const { t } = useI18n();
-  const list: Game[] = detail.meetings ?? [];
+/** Head to head before tip-off: the record between the teams and their form. */
+function PreGame() {
+  const { detail, league, colors } = useGameCtx();
+  const q = useGameHistory(detail.game);
+  const base = `/mac/${league.id}/${encodeURIComponent(detail.game.id)}`;
+  if (q.isLoading) return <H2HSkeleton />;
+  if (!q.data) return <Card><NotStarted /></Card>;
   return (
-    <Card>
-      <CardHeader title={t('previousMeetings')} />
-      {list.length ? (
-        <div className={s.meetings}>
-          {list.map((g) => (
-            <GameRow key={g.id} game={g} league={league} showLeague />
-          ))}
-        </div>
-      ) : (
-        <EmptyState icon={<BarChart3 size={22} />} title={t('noMeetings')} />
-      )}
-    </Card>
+    <>
+      <H2HSummary game={detail.game} history={q.data} colors={colors} linkAll={`${base}/karsilasmalar`} />
+      <FormCompare game={detail.game} history={q.data} league={league} />
+    </>
   );
+}
+
+export function GameMeetings() {
+  const { detail, league, colors } = useGameCtx();
+  const { t } = useI18n();
+  const q = useGameHistory(detail.game);
+  if (q.isLoading) {
+    return (
+      <div className={s.grid}>
+        <div className={s.colMain}>
+          <H2HSkeleton />
+        </div>
+      </div>
+    );
+  }
+  if (!q.data) {
+    return (
+      <Card>
+        <ErrorState onRetry={() => q.refetch()} title={t('h2hError')} />
+      </Card>
+    );
+  }
+  return (
+    <div className={s.grid}>
+      <div className={s.colMain}>
+        <H2HSummary game={detail.game} history={q.data} colors={colors} />
+        <FormCompare game={detail.game} history={q.data} league={league} />
+      </div>
+      <div className={s.colSide}>
+        <SeasonCompare game={detail.game} league={league} />
+        <H2HMeetings history={q.data} league={league} />
+      </div>
+    </div>
+  );
+}
+
+export function GameComments() {
+  const { detail } = useGameCtx();
+  return <Comments game={detail.game} />;
 }

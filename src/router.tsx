@@ -30,6 +30,7 @@ export const router = createBrowserRouter([
           { path: 'mac-akisi', lazy: () => import('./pages/Game').then((m) => ({ Component: m.GamePlays })) },
           { path: 'sut-haritasi', lazy: () => import('./pages/Game').then((m) => ({ Component: m.GameShots })) },
           { path: 'karsilasmalar', lazy: () => import('./pages/Game').then((m) => ({ Component: m.GameMeetings })) },
+          { path: 'yorumlar', lazy: () => import('./pages/Game').then((m) => ({ Component: m.GameComments })) },
         ],
       },
       {

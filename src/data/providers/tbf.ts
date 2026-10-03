@@ -3,12 +3,14 @@
 import { getJson, getJsonOrNull, proxyUrl } from '../http';
 import { flsLite, type FlsLite } from '../../../server/fls-lite.mjs';
 import type {
+  GameHistory,
   CareerRow, Game, GameDetail, GameLeader, GameLogRow, GameStatus, LeaderCategory, LeaderKey, LeagueDef, LeagueSchedule,
   Play, PlayKind, PlayerAverages, PlayerDetail, PlayerHit, PlayerLine, Provider, RosterPlayer, Shot, Side, StandingGroup,
   StandingRow, StatLine, TeamBox, TeamCompareRow, TeamDetail, TeamRef,
 } from '../types';
 import { compareFromTotals, hexColor, madeAtt, num, numOrNull, parseMinutes, personName, pushCompare, sortGames, sumLines, teamName } from '../normalize';
 import { addDays, ageFrom, istanbulToIso, localDayOf } from '../../lib/time';
+import { buildHistory, seasonLabel } from '../../lib/history';
 
 interface TbfLeague {
   activityId: number;
@@ -635,6 +637,22 @@ async function teams(league: LeagueDef): Promise<TeamRef[]> {
     .sort((a: TeamRef, b: TeamRef) => a.name.localeCompare(b.name, 'tr'));
 }
 
+/** The TBF only serves the current season's schedule per team, so meetings cover this season. */
+async function history(league: LeagueDef, g: Game): Promise<GameHistory> {
+  const i = await info(league);
+  const list = async (id: string) => {
+    const j = await getJsonOrNull('tbf', '/api/Team/get-team-detail-matches-by-season-and-league', {
+      LeagueId: i.activityId,
+      SeasonId: i.seasonId,
+      TeamProcessId: id,
+      prefix: league.tbfPrefix,
+    }).catch(() => null);
+    return ((j?.data?.maclar ?? []) as any[]).map((m) => gameFromMatch(league, m));
+  };
+  const [h, a] = await Promise.all([list(g.home.team.id), list(g.away.team.id)]);
+  return buildHistory(g, h, a, [seasonLabel(i.season)]);
+}
+
 async function team(league: LeagueDef, id: string): Promise<TeamDetail> {
   const i = await info(league);
   const p = { LeagueId: i.activityId, SeasonId: i.seasonId, TeamProcessId: id, prefix: league.tbfPrefix };
@@ -892,4 +910,4 @@ async function searchPlayers(league: LeagueDef, q: string): Promise<PlayerHit[]>
   }));
 }
 
-export const tbfProvider: Provider = { gamesByDate, game, standings, teams, team, player, leaders, schedule, searchPlayers };
+export const tbfProvider: Provider = { gamesByDate, game, history, standings, teams, team, player, leaders, schedule, searchPlayers };

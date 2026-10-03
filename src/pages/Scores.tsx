@@ -219,7 +219,7 @@ export function ScoresPage() {
       ) : visible.length > 0 ? (
         <div className={s.groups}>
           {visible.map((r) => (
-            <LeagueGroup key={r.league.id} league={r.league} games={r.games} favorites={favs} pinned={pinned.includes(r.league.id)} />
+            <LeagueGroup key={r.league.id} league={r.league} games={r.games} favorites={favs} pinned={pinned.includes(r.league.id)} videos={allSettled} />
           ))}
         </div>
       ) : allSettled || totalGames > 0 ? (

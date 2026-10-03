@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { NavLink } from 'react-router';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { NavLink, useLocation } from 'react-router';
 import { Star } from 'lucide-react';
 import s from './ui.module.css';
 
@@ -51,9 +51,19 @@ export interface TabItem {
 
 /** Route-backed tabs: each tab is a link, so tabs are shareable and keep history. */
 export function RouteTabs({ items, label }: { items: TabItem[]; label: string }) {
+  const row = useRef<HTMLDivElement>(null);
+  const { pathname } = useLocation();
+  // On narrow screens the row scrolls; keep the open tab in view.
+  useEffect(() => {
+    const el = row.current;
+    const active = el?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!el || !active || el.scrollWidth <= el.clientWidth) return;
+    const left = active.offsetLeft - (el.clientWidth - active.offsetWidth) / 2;
+    el.scrollTo({ left: Math.max(0, left), behavior: 'auto' });
+  }, [pathname, items.length]);
   return (
     <nav aria-label={label} className={s.tabs}>
-      <div className={s.tabsInner}>
+      <div className={s.tabsInner} ref={row}>
         {items.map((it) => (
           <NavLink key={it.to} to={it.to} end={it.end} replace className={({ isActive }) => `${s.tab} ${isActive ? s.tabActive : ''}`}>
             {it.label}

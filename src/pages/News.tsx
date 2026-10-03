@@ -6,6 +6,8 @@ import { useI18n } from '../i18n';
 import { addDays, localDayOf, parseDayKey, todayKey } from '../lib/time';
 import { NewsImage, NewsLink, NewsMeta } from '../components/news/NewsParts';
 import { Chip, Segmented } from '../components/ui/Controls';
+import { VideoTile } from '../components/video/Video';
+import { useLatestHighlights } from '../data/videos';
 import { Card, EmptyState, Skeleton } from '../components/ui/States';
 import u from '../components/ui/ui.module.css';
 import n from '../components/news/news.module.css';
@@ -61,6 +63,28 @@ function RiverRow({ item }: { item: NewsItem }) {
       </span>
       {item.image && <NewsImage item={item} width={168} className={n.rowThumb} />}
     </NewsLink>
+  );
+}
+
+/** Latest game highlights from the official channels, following the topic filter. */
+function HighlightsStrip({ topic }: { topic: TopicFilter }) {
+  const { t } = useI18n();
+  const { videos } = useLatestHighlights(topic);
+  if (!videos.length) return null;
+  return (
+    <section className={n.highlights} aria-labelledby="highlights-title">
+      <div className={n.sectionHead}>
+        <h2 id="highlights-title" className={n.sectionTitle}>
+          {t('highlightsTitle')}
+        </h2>
+        <span className={n.sectionHint}>{t('highlightsHint')}</span>
+      </div>
+      <div className={n.hlStrip}>
+        {videos.map((v) => (
+          <VideoTile key={v.id} video={v} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -179,6 +203,8 @@ export function NewsPage() {
           ))}
         </div>
       </div>
+
+      {!source && <HighlightsStrip topic={topic} />}
 
       {loading ? (
         <NewsSkeleton />

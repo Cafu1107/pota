@@ -2,7 +2,7 @@
   <a href="https://cafu1107.github.io/pota/"><img src="docs/assets/banner.png" alt="Pota: live basketball scores and stats. A game page with a shot chart on desktop and a game summary on a phone." width="100%"></a>
 </p>
 
-<p align="center"><b>Live basketball scores, box scores, shot charts, standings and news for 18 leagues, in Turkish and English.</b></p>
+<p align="center"><b>Live basketball scores, box scores, shot charts, head to head, game highlights, comments, standings and news for 18 leagues, in Turkish and English.</b></p>
 
 <p align="center">
   <a href="https://cafu1107.github.io/pota/"><img src="https://img.shields.io/badge/Open_the_live_demo-ea580c?style=for-the-badge&logoColor=white" alt="Open the live demo" height="38"></a>
@@ -20,7 +20,7 @@
 <p align="center">English · <a href="README.tr.md">Türkçe</a></p>
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="Walking through Pota: the scores page, a live game, play-by-play, box score, the news page and the EuroLeague standings." width="100%">
+  <img src="docs/assets/demo.gif" alt="Walking through Pota: yesterday’s scores with highlight marks, a EuroLeague game with its highlights, head to head, comments, the news page with game highlights and the EuroLeague standings." width="100%">
 </p>
 
 ## What's inside
@@ -28,8 +28,10 @@
 | ⚡ Live | 📊 Game center | 🏆 Leagues |
 |---|---|---|
 | Every game of the day, grouped by league. Live games refresh every 5 seconds; a new basket rolls the score and flashes the row once. | Box score, play-by-play with filters, shot chart, lead tracker, team stats side by side and the game's leaders. | Fixtures by round or date, standings with playoff, play-in and relegation zones, stat leaders and every team. |
+| **📜 Head to head** | **🎬 Highlights** | **💬 Comments** |
+| Every meeting between the two teams (last three seasons for EuroLeague and the ESPN leagues, this season for the Turkish leagues), wins each, points per game, biggest wins, both teams' last five games and a season comparison. | Finished games play their highlights from the official YouTube channels (EuroLeague, beIN SPORTS Türkiye for the BSL, NBA, WNBA, NBL, FIBA); Turkish league games, and NBL games without highlights, show the full broadcast. Score lists mark the games that have a video. | Talk about the game without signing up. Text only: no links, photos or videos, six allowed emoji, and swearing or slang is masked automatically. |
 | **⭐ Favorites** | **🆚 Compare** | **📰 News** |
-| Star teams to pin their games to the top, and pin the leagues you follow. | Two players or two teams, season averages side by side. | Basketball headlines from TBF, NTV Spor, TRT Spor, Fotomaç, Eurohoops and ESPN, filtered by topic or source. Every story opens on the outlet that published it. |
+| Star teams to pin their games to the top, and pin the leagues you follow. | Two players or two teams, season averages side by side. | Basketball headlines from TBF, NTV Spor, TRT Spor, Fotomaç, Eurohoops and ESPN, filtered by topic or source, plus the latest game highlights. Every story opens on the outlet that published it. |
 
 Also: team pages (next game, recent games, season stats, roster), player pages (bio, averages, game log, career), search with <kbd>Ctrl</kbd> <kbd>K</kbd> that finds "Besiktas" when you type it without Turkish letters, light and dark themes, and an installable app that opens with the last known data when you are offline.
 
@@ -38,11 +40,11 @@ Also: team pages (next game, recent games, season stats, roster), player pages (
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/en-scores.webp" alt="Scores page with a live game, the league rail, the featured game and a standings card"></td>
-    <td width="50%"><img src="docs/screenshots/en-game.webp" alt="Game summary: score header with period scores, lead tracker and game leaders"></td>
+    <td width="50%"><img src="docs/screenshots/en-video.webp" alt="Game summary with the official highlights video, period scores and game leaders"></td>
   </tr>
   <tr>
+    <td><img src="docs/screenshots/en-h2h.webp" alt="Head to head: wins each over three seasons, points per game, last and next meeting, both teams' last five games and a season comparison"></td>
     <td><img src="docs/screenshots/en-shots.webp" alt="Shot chart in dark mode: made shots as dots, misses as rings, for both teams"></td>
-    <td><img src="docs/screenshots/en-box.webp" alt="Box score with starters and bench, sortable columns and player photos"></td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/en-standings.webp" alt="EuroLeague standings with the ranking column highlighted and zone lines"></td>
@@ -51,10 +53,11 @@ Also: team pages (next game, recent games, season stats, roster), player pages (
 </table>
 
 <p align="center">
-  <img src="docs/screenshots/en-m-scores.webp" alt="Phone: scores page with the live strip" width="24%">
-  <img src="docs/screenshots/en-m-game.webp" alt="Phone: game header and lead tracker in dark mode" width="24%">
-  <img src="docs/screenshots/en-m-standings.webp" alt="Phone: Turkish Super League standings with the team column fixed while numbers scroll" width="24%">
-  <img src="docs/screenshots/en-m-news.webp" alt="Phone: news page" width="24%">
+  <img src="docs/screenshots/en-m-scores.webp" alt="Phone: scores page with the live strip" width="19%">
+  <img src="docs/screenshots/en-m-game.webp" alt="Phone: game header and lead tracker in dark mode" width="19%">
+  <img src="docs/screenshots/en-m-comments.webp" alt="Phone: comments with the allowed emoji and a comment where swearing was masked" width="19%">
+  <img src="docs/screenshots/en-m-standings.webp" alt="Phone: Turkish Super League standings with the team column fixed while numbers scroll" width="19%">
+  <img src="docs/screenshots/en-m-news.webp" alt="Phone: news page" width="19%">
 </p>
 
 ## Leagues and data
@@ -106,6 +109,9 @@ npm run build      # type check and production build into dist/
 
 - Each source has an adapter in `src/data/providers/` (`tbf.ts`, `euroleague.ts`, `espn.ts`) that maps it onto one model (`src/data/types.ts`). Pages never know where data came from.
 - News lives in `src/data/news.ts`: the TBF API plus RSS and Atom feeds, merged, de-duplicated and tagged Turkey, Europe or NBA.
+- Game videos (`src/data/videos.ts`) come from the public RSS feeds of official YouTube channels and playlists; a video belongs to a game when both team names are in its title and it was published around the game.
+- Head to head (`src/lib/history.ts`) is built from both teams' schedules, which each provider fetches for the seasons its source offers.
+- Comments: one API (`server/comments.mjs`) with the rules in `server/moderation.mjs`, stored in Cloudflare D1 on the demo and in `.data/comments.json` locally.
 - `server/upstreams.mjs` holds the allowlist and cache rules that both the local proxy and the Worker use.
 - Live Turkish games come from FIBA LiveStats, because the TBF service lags during games.
 - UI text is in `src/i18n/tr.ts` and `src/i18n/en.ts`; every key exists in both.
@@ -113,6 +119,7 @@ npm run build      # type check and production build into dist/
 **Deploying your own copy**
 
 1. Deploy the proxy: `cd deploy/worker && npm install && npx wrangler login && npm run deploy`. Add your site's origin to `ALLOWED_ORIGINS` in `wrangler.toml`.
+   For comments, create the database once: `npx wrangler d1 create pota-comments`, put its id in `wrangler.toml`, run `npx wrangler d1 migrations apply pota-comments --remote`, and set the secrets `ADMIN_TOKEN` and `IP_SALT` with `npx wrangler secret put`.
 2. In the GitHub repo, set the Actions variable `POTA_PROXY_BASE` to `https://<worker>.<account>.workers.dev/proxy` and choose "GitHub Actions" as the Pages source.
 3. Push to `main`. `.github/workflows/pages.yml` builds with `VITE_BASE=/<repo>/` and deploys.
 
@@ -133,6 +140,18 @@ A live game page refreshes every 5 seconds and score lists every 8 seconds. Each
 </details>
 
 <details>
+<summary><b>How are comments moderated?</b></summary>
+
+Every comment is checked on the server, not only in the browser. Links are refused (that is how photos and videos get shared), emoji outside the six allowed ones are removed, and Turkish and English swearing and slang are masked, including spaced or look-alike spellings such as "a.m.k" or "s1ktir", while words like "sıkı savunma" stay untouched. One person can post once every 20 seconds and 20 times an hour, a comment that three different people report is hidden, and the site owner can remove any comment. Addresses are only kept as a salted hash for the rate limit.
+</details>
+
+<details>
+<summary><b>Where do the videos come from?</b></summary>
+
+From the public RSS feeds of the leagues' and broadcasters' own YouTube channels and playlists, played with YouTube's privacy-enhanced player. Those feeds list the latest uploads, so highlights appear for recent games. Pota does not host or re-upload any video.
+</details>
+
+<details>
 <summary><b>A league shows no games.</b></summary>
 
 It is probably between seasons or on a break. For the ESPN leagues (NBA, WNBA, NCAA and others) the standings show the last completed season until the new one starts.
@@ -144,4 +163,4 @@ Bug reports and league requests are welcome in [Issues](https://github.com/Cafu1
 
 ## License
 
-[GPL-3.0-or-later](LICENSE). Data, logos, photos and news articles belong to their respective owners.
+[GPL-3.0-or-later](LICENSE). Data, logos, photos, news articles and videos belong to their respective owners.

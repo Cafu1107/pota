@@ -7,3 +7,10 @@ workers_dev = true
 [vars]
 # Comma-separated origins allowed to call the proxy from a browser.
 ALLOWED_ORIGINS = "https://cafu1107.github.io,http://localhost:5173,http://localhost:4173"
+
+# Game comments (server/comments.mjs). Schema: migrations/.
+[[d1_databases]]
+binding = "DB"
+database_name = "pota-comments"
+database_id = "a21b1924-0acd-44bf-a989-65c725d16aae"
+migrations_dir = "migrations"

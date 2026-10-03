@@ -9,11 +9,13 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { exec } from 'node:child_process';
 import { createProxyMiddleware, prewarm } from './proxy.mjs';
+import { createCommentsMiddleware } from './comments-local.mjs';
 
 const root = resolve(fileURLToPath(new URL('../dist', import.meta.url)));
 const port = Number(process.env.PORT) || 4173;
 const host = process.env.HOST || '0.0.0.0';
 const proxy = createProxyMiddleware();
+const comments = createCommentsMiddleware();
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -93,7 +95,7 @@ async function serveStatic(req, res) {
 }
 
 const server = createServer((req, res) => {
-  proxy(req, res, () => {
+  proxy(req, res, () => comments(req, res, () => {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       res.writeHead(405).end();
       return;
@@ -101,7 +103,7 @@ const server = createServer((req, res) => {
     serveStatic(req, res).catch(() => {
       if (!res.headersSent) res.writeHead(500).end();
     });
-  });
+  }));
 });
 
 server.listen(port, host, () => {

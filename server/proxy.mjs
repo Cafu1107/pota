@@ -234,7 +234,7 @@ export function createProxyMiddleware({ prefix = '/proxy' } = {}) {
     }
 
     const key = `${method} ${joined.href} ${reqBody ? reqBody.toString('utf8') : ''}`;
-    const meta = { url: joined.href, method, reqBody, ...rule(upstream, upstreamPath) };
+    const meta = { url: joined.href, method, reqBody, ...rule(upstream, upstreamPath + target.query) };
     const now = Date.now();
     const hit = cache.get(key);
 

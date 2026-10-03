@@ -49,6 +49,7 @@ export function makeI18n(lang: Lang) {
   const dateShort = (iso: string) => df('dshort', { day: 'numeric', month: 'short' }).format(new Date(iso));
   const dateLong = (iso: string) => df('dlong', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
   const dateMedium = (iso: string) => df('dmed', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(iso));
+  const dateShortYear = (iso: string) => df('dsy', { day: 'numeric', month: 'short', year: '2-digit' }).format(new Date(iso));
   const dateNumeric = (iso: string) => df('dnum', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(iso));
   const weekdayShort = (d: Date) => df('wd', { weekday: 'short' }).format(d);
   const dayMonth = (d: Date) => df('dm', { day: 'numeric', month: 'short' }).format(d);
@@ -144,7 +145,7 @@ export function makeI18n(lang: Lang) {
   };
 
   return {
-    lang, locale, t, num, avg, pct, time, dateShort, dateLong, dateMedium, dateNumeric, dayLabel, dayMonth,
+    lang, locale, t, num, avg, pct, time, dateShort, dateShortYear, dateLong, dateMedium, dateNumeric, dayLabel, dayMonth,
     weekdayShort, relativeIn, ago, period, statusShort, statusLong, roundLabel,
   };
 }

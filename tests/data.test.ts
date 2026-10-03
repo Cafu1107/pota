@@ -60,7 +60,19 @@ describe('proxy upstream rules', () => {
       upstream: 'tbf',
       url: 'https://miniappapi.tbf.org.tr/webapi-service/api/League/get-featured-9-leagues',
       path: '/api/League/get-featured-9-leagues',
+      query: '',
     });
+  });
+
+  it('only lets YouTube RSS feeds through the yt upstream', () => {
+    expect(resolveTarget('yt/feeds/videos.xml?channel_id=UCx')).toMatchObject({ upstream: 'yt', query: '?channel_id=UCx' });
+    expect(resolveTarget('yt/watch?v=abc')).toMatchObject({ status: 403 });
+    expect(resolveTarget('yt/results?search_query=x')).toMatchObject({ status: 403 });
+  });
+
+  it('caches a club schedule longer than live round lists', () => {
+    expect(rule('el', '/v2/competitions/E/seasons/E2025/games?teamCode=ULK')).toEqual({ ttl: 600, hot: false });
+    expect(rule('el', '/v2/competitions/E/seasons/E2026/games?roundNumber=4')).toEqual({ ttl: 15, hot: true });
   });
 
   it('refuses unknown upstreams and paths that leave the upstream', () => {

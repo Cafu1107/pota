@@ -1,12 +1,14 @@
 // EuroLeague / EuroCup: api-live.euroleague.net (v2/v3) + live.euroleague.net (live feeds).
 import { getJson, getJsonOrNull } from '../http';
 import type {
+  GameHistory,
   CareerRow, Game, GameDetail, GameLeader, GameLogRow, LeaderCategory, LeaderKey, LeagueDef, LeagueSchedule, Play,
   PlayKind, PlayerAverages, PlayerDetail, PlayerHit, PlayerLine, Provider, RosterPlayer, Shot, Side, StandingGroup,
   StandingRow, StatLine, TeamBox, TeamCompareRow, TeamDetail, TeamRef,
 } from '../types';
 import { compareFromTotals, num, numOrNull, parseMinutes, personName, pushCompare, sortGames, teamName } from '../normalize';
 import { ageFrom, clockToSeconds, localDayOf, localDayRange } from '../../lib/time';
+import { buildHistory, seasonLabel } from '../../lib/history';
 
 // Turkish club names arrive without Turkish letters ("Fenerbahce").
 const TR_FIXES: Array<[RegExp, string]> = [
@@ -579,6 +581,23 @@ async function team(league: LeagueDef, id: string): Promise<TeamDetail> {
   };
 }
 
+// ---------- head to head ----------
+
+/** The two clubs' games in the game's season and the two before it. */
+async function history(league: LeagueDef, g: Game): Promise<GameHistory> {
+  const [season] = splitId(league, g.id);
+  const y = Number(season.slice(1));
+  const seasons = [y, y - 1, y - 2].map((n) => `${league.elCode}${n}`);
+  const list = (s: string, team: string) =>
+    v2(league, s, '/games', { teamCode: team })
+      .then((j) => (j?.data ?? []).map((x: any) => gameFrom(league, x)) as Game[])
+      .catch(() => [] as Game[]);
+  const h = g.home.team.id;
+  const a = g.away.team.id;
+  const [h0, h1, h2, a0, a1] = await Promise.all([list(seasons[0], h), list(seasons[1], h), list(seasons[2], h), list(seasons[0], a), list(seasons[1], a)]);
+  return buildHistory(g, [...h0, ...h1, ...h2], [...a0, ...a1], [y, y - 1, y - 2].map(seasonLabel));
+}
+
 // ---------- players ----------
 
 function avgFromV2(a: any, gp: number, gs?: number): PlayerAverages {
@@ -732,4 +751,4 @@ async function searchPlayers(league: LeagueDef, q: string): Promise<PlayerHit[]>
     }));
 }
 
-export const euroleagueProvider: Provider = { gamesByDate, game, standings, teams, team, player, leaders, schedule, searchPlayers };
+export const euroleagueProvider: Provider = { gamesByDate, game, history, standings, teams, team, player, leaders, schedule, searchPlayers };

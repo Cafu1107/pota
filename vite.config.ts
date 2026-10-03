@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 // Plain ESM module shared with the standalone server (server/start.mjs).
 import { createProxyMiddleware, prewarm } from './server/proxy.mjs';
+import { createCommentsMiddleware } from './server/comments-local.mjs';
 
 // "/pota/" for the GitHub Pages build (project site), "/" everywhere else.
 const base = process.env.VITE_BASE || '/';
@@ -24,10 +25,12 @@ function potaProxy(): Plugin {
     name: 'pota-proxy',
     configureServer(server) {
       server.middlewares.use(createProxyMiddleware());
+      server.middlewares.use(createCommentsMiddleware());
       prewarm();
     },
     configurePreviewServer(server) {
       server.middlewares.use(createProxyMiddleware());
+      server.middlewares.use(createCommentsMiddleware());
       prewarm();
     },
   };

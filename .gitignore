@@ -10,3 +10,8 @@ Thumbs.db
 deploy/worker/node_modules/
 deploy/worker/.wrangler/
 dist-pages/
+
+# Local comments store
+.data/
+
+deploy/worker/.secrets.local

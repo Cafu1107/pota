@@ -4,7 +4,7 @@ import { del, get, set } from 'idb-keyval';
 
 // Last-known data lives in IndexedDB so a return visit paints instantly and
 // refreshes in the background. Live game detail is never persisted.
-const PERSISTED = new Set(['games', 'standings', 'teams', 'leaders', 'schedule', 'team', 'player', 'news']);
+const PERSISTED = new Set(['games', 'standings', 'teams', 'leaders', 'schedule', 'team', 'player', 'news', 'history', 'videos']);
 
 export const CACHE_BUSTER = 'pota-v2';
 export const CACHE_MAX_AGE = 24 * 60 * 60 * 1000;

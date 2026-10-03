@@ -9,6 +9,7 @@
 // on *.workers.dev, which is why it is not used.
 
 import { flsLite } from '../../../server/fls-lite.mjs';
+import { handleComments, hashIp } from '../../../server/comments.mjs';
 import {
   ERROR_TTL_S,
   MAX_STALE_LIVE_S,
@@ -98,7 +99,7 @@ async function cached(ctx, key, url, method, reqBody, meta) {
 function corsHeaders(request, env) {
   const origin = request.headers.get('origin');
   const allowed = (env.ALLOWED_ORIGINS || '*').split(',').map((s) => s.trim());
-  const h = { vary: 'origin', 'access-control-expose-headers': 'x-pota-cache, age' };
+  const h = { vary: 'origin', 'access-control-expose-headers': 'x-pota-cache, age, retry-after' };
   if (allowed.includes('*')) h['access-control-allow-origin'] = '*';
   else if (origin && allowed.includes(origin)) h['access-control-allow-origin'] = origin;
   return h;
@@ -113,6 +114,73 @@ function reply(cors, status, type, body, extra = {}) {
 
 const json = (cors, status, obj) => reply(cors, status, 'application/json; charset=utf-8', JSON.stringify(obj));
 
+// ---------- comments (D1) ----------
+
+/** @param {D1Database} db */
+function d1Store(db) {
+  const cols = 'id, game, name, body, created_at AS createdAt';
+  return {
+    async list(game, { after, before, limit }) {
+      const where = after !== undefined ? ' AND id > ?2' : before !== undefined ? ' AND id < ?2' : '';
+      const args = after !== undefined ? [game, after] : before !== undefined ? [game, before] : [game];
+      const { results } = await db.prepare(`SELECT ${cols} FROM comments WHERE game = ?1 AND hidden = 0${where} ORDER BY id DESC LIMIT ${Number(limit)}`).bind(...args).all();
+      return results;
+    },
+    async total(game) {
+      const r = await db.prepare('SELECT COUNT(*) AS n FROM comments WHERE game = ?1 AND hidden = 0').bind(game).first();
+      return r?.n ?? 0;
+    },
+    async recentByIp(ipHash, since) {
+      const { results } = await db
+        .prepare('SELECT game, body, created_at AS createdAt FROM comments WHERE ip_hash = ?1 AND created_at >= ?2 ORDER BY created_at DESC LIMIT 50')
+        .bind(ipHash, since)
+        .all();
+      return results;
+    },
+    async insert(c) {
+      const r = await db
+        .prepare('INSERT INTO comments (game, name, body, created_at, ip_hash) VALUES (?1, ?2, ?3, ?4, ?5) RETURNING id')
+        .bind(c.game, c.name, c.body, c.createdAt, c.ipHash)
+        .first();
+      return { id: r.id, game: c.game, name: c.name, body: c.body, createdAt: c.createdAt };
+    },
+    async report(id, ipHash) {
+      if (!(await db.prepare('SELECT id FROM comments WHERE id = ?1').bind(id).first())) return null;
+      await db.prepare('INSERT OR IGNORE INTO reports (comment_id, ip_hash) VALUES (?1, ?2)').bind(id, ipHash).run();
+      const r = await db.prepare('SELECT COUNT(*) AS n FROM reports WHERE comment_id = ?1').bind(id).first();
+      return r?.n ?? 0;
+    },
+    async hide(id) {
+      const r = await db.prepare('UPDATE comments SET hidden = 1 WHERE id = ?1').bind(id).run();
+      return (r.meta?.changes ?? 0) > 0;
+    },
+  };
+}
+
+async function comments(request, env, url, cors) {
+  if (!env.DB) return json(cors, 503, { error: 'comments-disabled' });
+  const body = request.method === 'POST' ? await request.text() : '';
+  if (body.length > 8 * 1024) return json(cors, 413, { error: 'too-large' });
+  const ip = request.headers.get('cf-connecting-ip') ?? '';
+  try {
+    const r = await handleComments(
+      {
+        method: request.method,
+        path: url.pathname.slice('/api'.length),
+        query: url.searchParams,
+        body,
+        ipHash: await hashIp(ip, env.IP_SALT || 'pota'),
+        authorization: request.headers.get('authorization'),
+      },
+      d1Store(env.DB),
+      { adminToken: env.ADMIN_TOKEN },
+    );
+    return reply(cors, r.status, 'application/json; charset=utf-8', JSON.stringify(r.body), r.headers ?? {});
+  } catch {
+    return json(cors, 500, { error: 'server' });
+  }
+}
+
 export default {
   /** @param {Request} request */
   async fetch(request, env, ctx) {
@@ -122,8 +190,8 @@ export default {
         status: 204,
         headers: {
           ...cors,
-          'access-control-allow-methods': 'GET, POST, OPTIONS',
-          'access-control-allow-headers': 'content-type, accept',
+          'access-control-allow-methods': 'GET, POST, DELETE, OPTIONS',
+          'access-control-allow-headers': 'content-type, accept, authorization',
           'access-control-max-age': '86400',
         },
       });
@@ -134,6 +202,7 @@ export default {
     if (raw === '/' || raw === '/proxy' || raw === '/proxy/') {
       return json(cors, 200, { name: 'pota-proxy', upstreams: [...Object.keys(UPSTREAMS), 'fls-lite'] });
     }
+    if (url.pathname.startsWith('/api/')) return comments(request, env, url, cors);
     if (!raw.startsWith('/proxy/')) return json(cors, 404, { error: 'not found' });
     const rest = raw.slice('/proxy/'.length);
 
@@ -168,7 +237,7 @@ export default {
 
     try {
       const key = `${method} ${target.url} ${reqBody}`;
-      const { e, state, age } = await cached(ctx, key, target.url, method, reqBody, rule(target.upstream, target.path));
+      const { e, state, age } = await cached(ctx, key, target.url, method, reqBody, rule(target.upstream, target.path + target.query));
       return reply(cors, e.status, e.type, request.method === 'HEAD' ? null : e.body.slice(0), {
         'x-pota-cache': state,
         age: String(Math.round(age)),
