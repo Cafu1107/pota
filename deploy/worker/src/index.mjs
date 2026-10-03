@@ -117,7 +117,7 @@ function reply(cors, status, type, body, extra = {}) {
 // Requests per address per minute. Counted per isolate (Cloudflare may spread one
 // client over several), so these are generous ceilings that stop a script from
 // burning the free plan or getting the Worker blocked by an upstream.
-const LIMITS = { proxy: 300, read: 120, write: 12 };
+const LIMITS = { proxy: 600, read: 120, write: 12 };
 const WINDOW_MS = 60_000;
 /** @type {Map<string, { start: number, count: number }>} */
 const windows = new Map();
