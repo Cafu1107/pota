@@ -2,7 +2,8 @@
 
 The Cloudflare Worker that serves Pota's data proxy for the GitHub Pages build. It forwards
 `/proxy/<upstream>/<path>` to the allowlisted sources in `server/upstreams.mjs`, adds CORS for the
-origins in `wrangler.toml`, and keeps recent responses in memory (stale-while-revalidate).
+origins in `wrangler.toml`, keeps recent responses in memory (stale-while-revalidate), and lets
+Cloudflare's edge cache hold upstream answers so every isolate in a data center shares them.
 `/proxy/fls-lite/<id>` returns the condensed live score that score lists poll.
 
 ```bash

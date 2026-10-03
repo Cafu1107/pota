@@ -4,7 +4,9 @@
 // allowlisted upstream and adds CORS. Each isolate keeps an in-memory copy of
 // recent responses and serves it while a fresh one loads in the background
 // (stale-while-revalidate); concurrent misses for one key share one upstream call.
-// The Cache API is a no-op on *.workers.dev, so memory is the cache here.
+// Behind that, upstream GETs use the data center's edge cache (fetch `cf` options),
+// so a cold isolate still answers in milliseconds. The Cache API itself is a no-op
+// on *.workers.dev, which is why it is not used.
 
 import { flsLite } from '../../../server/fls-lite.mjs';
 import {
@@ -38,23 +40,30 @@ function load(key, url, method, reqBody, meta) {
   let p = inflight.get(key);
   if (p) return p;
   p = (async () => {
+    // GETs also go through Cloudflare's edge cache, which every isolate in the data center
+    // shares (memory is per isolate). Live data keeps a shorter edge life so the two caches
+    // together never add more than a few seconds.
+    const edgeTtl = meta.hot ? Math.max(1, Math.floor(meta.ttl / 2)) : meta.ttl;
     const res = await fetch(url, {
       method,
       body: method === 'POST' ? reqBody || '{}' : undefined,
       headers: { ...UPSTREAM_HEADERS, ...(method === 'POST' ? { 'content-type': 'application/json' } : {}) },
       signal: AbortSignal.timeout(TIMEOUT_MS),
+      ...(method === 'GET' ? { cf: { cacheEverything: true, cacheTtlByStatus: { '200-299': edgeTtl, '404': ERROR_TTL_S, '500-599': 0 } } } : {}),
     });
     const body = await res.arrayBuffer();
     const ok = res.ok;
     const prev = mem.get(key);
     // Keep serving the last good copy when the upstream errors.
     if (!ok && prev && prev.status >= 200 && prev.status < 300) return prev;
+    // A copy from a cache is already this old (never counted beyond its own fresh time).
+    const servedAge = Math.min(Number(res.headers.get('age')) || 0, meta.ttl);
     /** @type {Entry} */
     const entry = {
       status: res.status,
       type: res.headers.get('content-type') || 'application/json',
       body,
-      fetchedAt: Date.now(),
+      fetchedAt: Date.now() - servedAge * 1000,
       ttl: ok ? meta.ttl : res.status >= 500 ? 0 : ERROR_TTL_S,
       hot: meta.hot,
     };
