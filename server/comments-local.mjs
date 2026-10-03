@@ -5,6 +5,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { handleComments, hashIp, memoryStore } from './comments.mjs';
+import { SAFE_HEADERS } from './upstreams.mjs';
 
 const FILE = resolve(fileURLToPath(new URL('..', import.meta.url)), '.data', 'comments.json');
 const SALT = process.env.POTA_IP_SALT || 'pota-local';
@@ -79,7 +80,7 @@ export function createCommentsMiddleware({ prefix = '/api' } = {}) {
       { adminToken: process.env.POTA_ADMIN_TOKEN },
     );
     if (req.method !== 'GET' && result.status < 300) save();
-    res.writeHead(result.status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...(result.headers ?? {}) });
+    res.writeHead(result.status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...SAFE_HEADERS, ...(result.headers ?? {}) });
     res.end(JSON.stringify(result.body));
   };
 }

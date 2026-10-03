@@ -21,6 +21,7 @@ import {
   MAX_STALE_S,
   TIMEOUT_MS,
   UPSTREAMS,
+  SAFE_HEADERS,
   UPSTREAM_HEADERS,
   isPostAllowed,
   resolveTarget,
@@ -142,7 +143,7 @@ function readBody(req, limit = 16 * 1024) {
  * @param {{cache?: string, gz?: Buffer, age?: number}} [opts]
  */
 function send(req, res, status, type, body, opts = {}) {
-  const headers = { 'content-type': type, 'cache-control': 'no-store' };
+  const headers = { 'content-type': type, 'cache-control': 'no-store', ...SAFE_HEADERS };
   if (opts.cache) headers['x-pota-cache'] = opts.cache;
   if (opts.age !== undefined) headers.age = String(Math.max(0, Math.round(opts.age)));
   let payload = body;

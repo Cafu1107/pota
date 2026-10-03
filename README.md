@@ -159,7 +159,7 @@ It is probably between seasons or on a break. For the ESPN leagues (NBA, WNBA, N
 
 ## Contributing
 
-Bug reports and league requests are welcome in [Issues](https://github.com/Cafu1107/pota/issues). See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Bug reports and league requests are welcome in [Issues](https://github.com/Cafu1107/pota/issues). See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Security problems go through private reporting, as described in [SECURITY.md](SECURITY.md).
 
 ## License
 

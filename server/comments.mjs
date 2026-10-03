@@ -37,6 +37,14 @@ export async function hashIp(ip, salt) {
 }
 
 const json = (status, body, headers) => ({ status, body, headers });
+
+/** Compares a presented secret without leaking how much of it matched. */
+export function sameSecret(given, expected) {
+  if (!expected || typeof given !== 'string') return false;
+  let diff = given.length ^ expected.length;
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ (given.charCodeAt(i) || 0);
+  return diff === 0;
+}
 const intParam = (v) => (v && /^\d{1,12}$/.test(v) ? Number(v) : undefined);
 
 /**
@@ -102,7 +110,7 @@ export async function handleComments(req, store, opts = {}) {
 
   if (req.method === 'DELETE' && parts.length === 2) {
     const token = (req.authorization ?? '').replace(/^Bearer\s+/i, '');
-    if (!opts.adminToken || token !== opts.adminToken) return json(401, { error: 'unauthorized' });
+    if (!sameSecret(token, opts.adminToken)) return json(401, { error: 'unauthorized' });
     const id = intParam(parts[1]);
     if (id === undefined) return json(400, { error: 'bad-id' });
     return (await store.hide(id)) ? json(200, { ok: true }) : json(404, { error: 'not-found' });

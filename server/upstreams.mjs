@@ -17,9 +17,28 @@ export const UPSTREAMS = {
   yt: 'https://www.youtube.com',
 };
 
-// Upstreams that only expose some paths.
+// The only paths each upstream exposes: the APIs and feeds the app reads. Anything
+// else (a news site's HTML pages, error pages, other services on the same host)
+// is refused, so the proxy can never serve someone else's page from our origin.
 const PATHS = {
+  espn: /^\/apis\//,
+  'espn-web': /^\/apis\//,
+  el: /^\/v[1-3]\//,
+  'el-live': /^\/api\//,
+  tbf: /^\/api\//,
+  fls: /^\/data\/\d{1,12}\/data\.json$/,
+  ntvspor: /^\/rss\//,
+  trtspor: /^\/rss\//,
+  fotomac: /^\/rss\//,
+  eurohoops: /^\/(?:[a-z]{2}\/)?feed\/?$/,
   yt: /^\/feeds\/videos\.xml$/,
+};
+
+/** Headers for everything the proxy and the comments API send back: data only, never a page. */
+export const SAFE_HEADERS = {
+  'x-content-type-options': 'nosniff',
+  'content-security-policy': "default-src 'none'; frame-ancestors 'none'; sandbox",
+  'referrer-policy': 'no-referrer',
 };
 
 // [upstream, regex on path + query, fresh seconds, hot]. First match wins.
@@ -84,8 +103,10 @@ export function resolveTarget(rest) {
   const prefix = target.pathname.replace(/\/$/, '');
   const joined = new URL(prefix + pathAndQuery, target.origin);
   if (joined.origin !== target.origin) return { error: 'bad path', status: 400 };
+  // "/webapi-service/../x" resolves outside the API prefix.
+  if (prefix && !joined.pathname.startsWith(prefix + '/')) return { error: 'bad path', status: 400 };
   const path = joined.pathname.slice(prefix.length);
-  if (PATHS[upstream] && !PATHS[upstream].test(path)) return { error: 'path not allowed', status: 403 };
+  if (!PATHS[upstream]?.test(path)) return { error: 'path not allowed', status: 403 };
   return { upstream, url: joined.href, path: joined.pathname.slice(prefix.length), query: joined.search };
 }
 

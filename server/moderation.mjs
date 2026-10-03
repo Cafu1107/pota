@@ -117,19 +117,34 @@ export function censor(text) {
 
 // ---------- the whole check ----------
 
+export const MAX_LINES = 8;
+
 function tidy(text, keepNewlines) {
   let t = String(text ?? '').normalize('NFC').replace(INVISIBLE, '').replace(/\r\n?/g, '\n');
-  t = keepNewlines ? t.replace(/[^\S\n]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n') : t.replace(/\s+/g, ' ');
+  // "Zalgo" text: at most two combining marks on a letter.
+  t = t.replace(/(\p{M}{2})\p{M}+/gu, '$1');
+  if (keepNewlines) {
+    t = t.replace(/[^\S\n]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n');
+    let lines = 0;
+    t = t.replace(/\n/g, () => (++lines >= MAX_LINES ? ' ' : '\n'));
+  } else {
+    t = t.replace(/\s+/g, ' ');
+  }
   return t.trim();
 }
+
+// Nicknames that could pass for the site or its staff.
+const RESERVED = /^(?:pota|admin|administrator|yonetici|moderator|moderat[oö]r|mod|sistem|system|official|resmi|destek|support)$/i;
 
 /**
  * Applies every rule to a comment.
  * @returns {{ ok: true, name: string, body: string, censored: number, emojiRemoved: number } | { ok: false, error: 'link' | 'short' | 'long' }}
  */
 export function moderate({ name, body }) {
+  // Refuse oversized input before any heavier work (the hosted Worker has a small CPU budget).
+  if (String(body ?? '').length > MAX_BODY * 4) return { ok: false, error: 'long' };
   const rawBody = tidy(body, true);
-  const rawName = tidy(name, false);
+  const rawName = tidy(String(name ?? '').slice(0, MAX_NAME * 4), false);
   if (hasLink(rawBody) || hasLink(rawName)) return { ok: false, error: 'link' };
   const b = filterEmoji(rawBody);
   const n = filterEmoji(rawName, new Set());
@@ -138,9 +153,11 @@ export function moderate({ name, body }) {
   const finalBody = cb.text;
   if ([...finalBody].length < MIN_BODY) return { ok: false, error: 'short' };
   if ([...finalBody].length > MAX_BODY) return { ok: false, error: 'long' };
+  const shortName = [...cn.text].slice(0, MAX_NAME).join('').trim();
   return {
     ok: true,
-    name: [...cn.text].slice(0, MAX_NAME).join('').trim(),
+    // Reserved or symbol-only names fall back to the default ("Taraftar" / "Fan").
+    name: RESERVED.test(fold(shortName)) || !/[\p{L}\p{N}]/u.test(shortName) ? '' : shortName,
     body: finalBody,
     censored: cb.count + cn.count,
     emojiRemoved: b.removed,

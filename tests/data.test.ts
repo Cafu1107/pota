@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { bestOf } from '../src/data/providers/euroleague';
 import { newsImage, preferLang, type NewsItem } from '../src/data/news';
 // @ts-expect-error plain ESM module without types
-import { isPostAllowed, resolveTarget, rule } from '../server/upstreams.mjs';
+import { isPostAllowed, resolveTarget, rule, SAFE_HEADERS } from '../server/upstreams.mjs';
 
 const later = <T,>(v: T, ms: number) => new Promise<T>((resolve) => setTimeout(() => resolve(v), ms));
 const failLater = (ms: number) => new Promise<never>((_, reject) => setTimeout(() => reject(new Error('down')), ms));
@@ -62,6 +62,28 @@ describe('proxy upstream rules', () => {
       path: '/api/League/get-featured-9-leagues',
       query: '',
     });
+  });
+
+  it('only exposes the API and feed paths of each upstream', () => {
+    expect(resolveTarget('ntvspor/')).toMatchObject({ status: 403 });
+    expect(resolveTarget('fotomac/basketbol')).toMatchObject({ status: 403 });
+    expect(resolveTarget('eurohoops/tr/')).toMatchObject({ status: 403 });
+    expect(resolveTarget('espn/')).toMatchObject({ status: 403 });
+    expect(resolveTarget('fls/')).toMatchObject({ status: 403 });
+    expect(resolveTarget('ntvspor/rss/kategori/basketbol')).toMatchObject({ upstream: 'ntvspor' });
+    expect(resolveTarget('eurohoops/tr/feed/')).toMatchObject({ upstream: 'eurohoops' });
+    expect(resolveTarget('fls/data/2923433/data.json')).toMatchObject({ upstream: 'fls' });
+    expect(resolveTarget('el/v2/competitions/E/seasons/E2026/rounds')).toMatchObject({ upstream: 'el' });
+  });
+
+  it('refuses paths that climb out of an API prefix', () => {
+    expect(resolveTarget('tbf/../x')).toMatchObject({ status: 400 });
+    expect(resolveTarget('tbf/%2e%2e/%2e%2e/admin')).toMatchObject({ status: 400 });
+  });
+
+  it('marks every proxied answer as data that must never render as a page', () => {
+    expect(SAFE_HEADERS['x-content-type-options']).toBe('nosniff');
+    expect(SAFE_HEADERS['content-security-policy']).toContain('sandbox');
   });
 
   it('only lets YouTube RSS feeds through the yt upstream', () => {

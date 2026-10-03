@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -16,6 +17,44 @@ function proxyPreconnect(): Plugin {
       const proxy = process.env.VITE_PROXY_BASE;
       if (!proxy || !/^https?:\/\//.test(proxy)) return;
       return [{ tag: 'link', attrs: { rel: 'preconnect', href: new URL(proxy).origin, crossorigin: '' }, injectTo: 'head-prepend' }];
+    },
+  };
+}
+
+/**
+ * Content Security Policy for production builds. GitHub Pages cannot send headers,
+ * so it goes in a <meta> tag; inline scripts (the theme bootstrap) are allowed by hash.
+ * Dev builds skip it (Vite's dev client injects inline code).
+ */
+function contentSecurityPolicy(): Plugin {
+  return {
+    name: 'pota-csp',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html) {
+        const hashes = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(
+          (m) => `'sha256-${createHash('sha256').update(m[1]).digest('base64')}'`,
+        );
+        const proxy = process.env.VITE_PROXY_BASE;
+        const dataOrigin = proxy && /^https?:\/\//.test(proxy) ? ` ${new URL(proxy).origin}` : '';
+        const policy = [
+          "default-src 'self'",
+          `script-src 'self' ${hashes.join(' ')}`.trim(),
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' https: data: blob:",
+          "font-src 'self' data:",
+          `connect-src 'self'${dataOrigin}`,
+          'frame-src https://www.youtube-nocookie.com',
+          "media-src 'self'",
+          "worker-src 'self'",
+          "manifest-src 'self'",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+        ].join('; ');
+        return html.replace('<head>', `<head>\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`);
+      },
     },
   };
 }
@@ -42,6 +81,7 @@ export default defineConfig({
     react(),
     potaProxy(),
     proxyPreconnect(),
+    contentSecurityPolicy(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon-180x180.png'],

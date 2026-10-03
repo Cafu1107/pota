@@ -159,7 +159,7 @@ Lig büyük ihtimalle sezon arasında ya da tatilde. ESPN liglerinde (NBA, WNBA,
 
 ## Katkı
 
-Hata bildirimleri ve lig istekleri [Issues](https://github.com/Cafu1107/pota/issues) bölümüne açılabilir. Pull request açmadan önce [CONTRIBUTING.md](CONTRIBUTING.md) dosyasına göz at.
+Hata bildirimleri ve lig istekleri [Issues](https://github.com/Cafu1107/pota/issues) bölümüne açılabilir. Pull request açmadan önce [CONTRIBUTING.md](CONTRIBUTING.md) dosyasına göz at. Güvenlik açıkları ise [SECURITY.md](SECURITY.md) dosyasında anlatıldığı gibi gizli olarak bildirilmeli.
 
 ## Lisans
 

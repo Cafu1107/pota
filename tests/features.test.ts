@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error plain ESM module without types
-import { handleComments, hashIp, memoryStore, HIDE_AFTER_REPORTS, MIN_INTERVAL_S } from '../server/comments.mjs';
+import { handleComments, hashIp, memoryStore, sameSecret, HIDE_AFTER_REPORTS, MIN_INTERVAL_S } from '../server/comments.mjs';
 import { censor, filterEmoji, hasLink, moderate, ALLOWED_EMOJI, MAX_BODY } from '../server/moderation.mjs';
 import { buildHistory, seasonLabel, summarizeHistory } from '../src/lib/history';
 import { matchVideo, nameWords, type Video } from '../src/data/videos';
@@ -84,6 +84,14 @@ describe('comments API', () => {
     const d = (await handleComments(post({ game: 'bsl:2', body: 'ikinci yorum' }, 'ip9'), store)).body.comment;
     expect((await handleComments(req({ method: 'DELETE', path: `/comments/${d.id}`, authorization: 'Bearer nope' }), store, { adminToken: 'secret' })).status).toBe(401);
     expect((await handleComments(req({ method: 'DELETE', path: `/comments/${d.id}`, authorization: 'Bearer secret' }), store, { adminToken: 'secret' })).status).toBe(200);
+  });
+
+  it('compares the admin token without shortcuts', () => {
+    expect(sameSecret('abc123', 'abc123')).toBe(true);
+    expect(sameSecret('abc124', 'abc123')).toBe(false);
+    expect(sameSecret('abc', 'abc123')).toBe(false);
+    expect(sameSecret('abc123', undefined)).toBe(false);
+    expect(sameSecret(undefined, 'abc123')).toBe(false);
   });
 
   it('never keeps the raw address', async () => {
@@ -170,5 +178,17 @@ describe('game videos', () => {
   it('accepts a federation stream published days before tip-off', () => {
     const s = v('fffffffffff', 'Fenerbahçe Tarfin - Dubai Basketball Türkiye Sigorta TBL 4.Hafta', '2026-09-29T16:00:00Z', 'stream');
     expect(matchVideo(g, [s])?.id).toBe('fffffffffff');
+  });
+});
+
+describe('security hardening', () => {
+  it('masks reserved and empty nicknames, caps zalgo and line floods, refuses oversized input early', () => {
+    for (const n of ['Admin', 'pota', 'Yönetici', 'MODERATÖR', '★★★']) expect((moderate({ name: n, body: 'merhaba' }) as { name: string }).name, n).toBe('');
+    expect((moderate({ name: 'Can', body: 'merhaba' }) as { name: string }).name).toBe('Can');
+    const z = moderate({ name: 'x', body: 'a\u0301\u0302\u0303\u0304\u0305\u0306 b' }) as { body: string };
+    expect([...z.body.normalize('NFD')].filter((c) => /\p{M}/u.test(c)).length).toBeLessThanOrEqual(3);
+    const lines = moderate({ name: 'x', body: Array.from({ length: 30 }, (_, i) => `satır ${i}`).join('\n') }) as { body: string };
+    expect(lines.body.split('\n').length).toBeLessThanOrEqual(8);
+    expect(moderate({ name: 'x', body: 'x'.repeat(MAX_BODY * 4 + 1) })).toEqual({ ok: false, error: 'long' });
   });
 });

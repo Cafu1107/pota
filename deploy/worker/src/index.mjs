@@ -16,6 +16,7 @@ import {
   MAX_STALE_S,
   TIMEOUT_MS,
   UPSTREAMS,
+  SAFE_HEADERS,
   UPSTREAM_HEADERS,
   isPostAllowed,
   resolveTarget,
@@ -108,9 +109,52 @@ function corsHeaders(request, env) {
 function reply(cors, status, type, body, extra = {}) {
   return new Response(body, {
     status,
-    headers: { 'content-type': type, 'cache-control': 'no-store', ...cors, ...extra },
+    headers: { 'content-type': type, 'cache-control': 'no-store', ...SAFE_HEADERS, ...cors, ...extra },
   });
 }
+
+// ---------- rate limits ----------
+// Requests per address per minute. Counted per isolate (Cloudflare may spread one
+// client over several), so these are generous ceilings that stop a script from
+// burning the free plan or getting the Worker blocked by an upstream.
+const LIMITS = { proxy: 300, read: 120, write: 12 };
+const WINDOW_MS = 60_000;
+/** @type {Map<string, { start: number, count: number }>} */
+const windows = new Map();
+
+/** Seconds to wait when over the limit, else 0. */
+function overLimit(kind, ip, now = Date.now()) {
+  const key = `${kind}|${ip}`;
+  let w = windows.get(key);
+  if (!w || now - w.start >= WINDOW_MS) {
+    w = { start: now, count: 0 };
+    windows.set(key, w);
+  }
+  w.count++;
+  if (windows.size > 20_000) {
+    for (const [k, v] of windows) if (now - v.start >= WINDOW_MS) windows.delete(k);
+  }
+  return w.count > LIMITS[kind] ? Math.max(1, Math.ceil((w.start + WINDOW_MS - now) / 1000)) : 0;
+}
+
+const BINDINGS = { proxy: 'LIMIT_PROXY', read: 'LIMIT_READ', write: 'LIMIT_WRITE' };
+
+/** Seconds to wait, using the data-center-wide Rate Limiting binding when configured. */
+async function limited(env, kind, ip) {
+  const binding = env[BINDINGS[kind]];
+  if (binding?.limit) {
+    try {
+      const { success } = await binding.limit({ key: ip || 'unknown' });
+      return success ? 0 : 60;
+    } catch {
+      /* fall back to the per-isolate counters */
+    }
+  }
+  return overLimit(kind, ip);
+}
+
+const tooMany = (cors, wait) =>
+  reply(cors, 429, 'application/json; charset=utf-8', JSON.stringify({ error: 'rate', retryAfter: wait }), { 'retry-after': String(wait) });
 
 const json = (cors, status, obj) => reply(cors, status, 'application/json; charset=utf-8', JSON.stringify(obj));
 
@@ -202,8 +246,14 @@ export default {
     if (raw === '/' || raw === '/proxy' || raw === '/proxy/') {
       return json(cors, 200, { name: 'pota-proxy', upstreams: [...Object.keys(UPSTREAMS), 'fls-lite'] });
     }
-    if (url.pathname.startsWith('/api/')) return comments(request, env, url, cors);
+    const ip = request.headers.get('cf-connecting-ip') ?? '';
+    if (url.pathname.startsWith('/api/')) {
+      const wait = await limited(env, request.method === 'GET' ? 'read' : 'write', ip);
+      return wait ? tooMany(cors, wait) : comments(request, env, url, cors);
+    }
     if (!raw.startsWith('/proxy/')) return json(cors, 404, { error: 'not found' });
+    const wait = await limited(env, 'proxy', ip);
+    if (wait) return tooMany(cors, wait);
     const rest = raw.slice('/proxy/'.length);
 
     // /proxy/fls-lite/<geniusId>: compact live state for score lists.
